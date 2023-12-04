@@ -238,3 +238,14 @@ function cleanTag(tag) {
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+var sidebar = document.createElement('div');
+sidebar.id = 'my-extension-sidebar';
+document.body.appendChild(sidebar);
+
+// Load the popup HTML as sidebar
+fetch(chrome.runtime.getURL('index.html'))
+  .then(response => response.text())
+  .then(data => {
+    sidebar.innerHTML = data;
+  });
