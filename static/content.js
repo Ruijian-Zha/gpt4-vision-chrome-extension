@@ -101,35 +101,61 @@ async function handleOpenUrlInCurrentTab(url, sendResponse) {
 /* Core functions */
 
 async function addUniqueTags() {
-  await wait(1000);
-
-  const tagElementStyles = {
-    color: "black",
-    fontSize: "14px",
-    padding: "3px",
-    fontWeight: "bold",
-    zIndex: "999",
-    position: "relative"
-  };
+  await wait(1000); // Make sure this `wait` function is defined in your code.
 
   const elements = document.querySelectorAll("a, button, input, textarea, [role='button'], [role='textbox']");
 
-  elements.forEach((element) => {
+  elements.forEach((element, index) => {
     if (!element.hasAttribute("data-ai-tag")) {
-      const uniqueTag = generateUID();
+      const uniqueTag = (index + 1).toString(); // Convert "index+1" to string
+      const borderColor = getRandomColor();
+
       element.setAttribute("data-ai-tag", uniqueTag);
+      element.style.border = `2px dashed ${borderColor}`;
+      element.style.position = 'relative'; // Ensures the label is positioned in relation to the element.
 
-      const tagElement = createTagElement(uniqueTag, tagElementStyles);
+      // Create and position the label.
+      const labelElement = createLabelElement(index + 1, borderColor);
+      document.body.appendChild(labelElement); // Append to the body to avoid positioning conflicts.
 
-      if (["input", "textarea"].includes(element.tagName.toLowerCase()) || element.getAttribute('role') === 'textbox') {
-        tagElement.style.background = "orange";
-        element.parentNode.insertBefore(tagElement, element);
-      } else {
-        tagElement.style.background = "yellow";
-        element.prepend(tagElement);
-      }
+      // Position the label exactly at the top-left corner of the bounding box.
+      const rect = element.getBoundingClientRect();
+      labelElement.style.position = 'absolute';
+      labelElement.style.top = `${rect.top + window.scrollY}px`;
+      labelElement.style.left = `${rect.left + window.scrollX}px`;
+      labelElement.style.transform = 'translateY(-100%) translateX(-2px)'; // Adjust for the border width
     }
   });
+}
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+function createLabelElement(index, borderColor) {
+  const labelElement = document.createElement("span");
+
+  labelElement.textContent = `${index}`;
+  labelElement.style.backgroundColor = borderColor;
+  labelElement.style.color = "white";
+  labelElement.style.position = "absolute";
+  labelElement.style.padding = '2px';
+  labelElement.style.fontSize = '12px';
+  labelElement.style.border = `1px solid ${borderColor}`;
+  labelElement.style.zIndex = '1000'; // Ensure the label is above other elements.
+
+  // Temporarily add to the document to measure the size.
+  document.body.appendChild(labelElement);
+  // Adjust the position to be exactly next to the bounding box.
+  labelElement.style.left = '-1px'; // Overlap border by 1px to eliminate space
+  labelElement.style.top = '-1px'; // Overlap border by 1px to eliminate space
+
+  return labelElement;
 }
 
 async function captureTab() {

@@ -74,6 +74,7 @@ export async function createCompletionWorkaround(
   return result;
 }
 
+// transform the string output into json format
 export function parseJsonString(jsonString: string): Commands | null {
   // Use regex to remove the 'json' prefix and backticks if they exist
   const regex = /.*```json\n([\s\S]*?)\n```.*/;

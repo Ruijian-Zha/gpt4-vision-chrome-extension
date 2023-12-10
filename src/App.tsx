@@ -42,6 +42,7 @@ export const App: React.FC = () => {
   );
 }
 
+// whenever the data changes, scroll down to the last message
 const AIChat = ({ input }: { input: string }) => {
   const data = useAI(input);
 
