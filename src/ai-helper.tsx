@@ -57,20 +57,74 @@ export async function createCompletionWorkaround(
         }
     ]
     `;
-  const messages: ChatCompletionMessageParam[] = [
-    {
-      role: "system",
-      content: systemPrompt,
-    },
-    ...inputMessages,
-  ];
 
-  const result = await openai.chat.completions.create({
-    model: "gpt-4-vision-preview",
-    messages,
-    max_tokens: 4096,
+  console.log(inputMessages);
+
+  // here is the data for input Message 
+  // [{"content":[{"image_url":{"detail":"auto","url":""},"type":"image_url"},{"text":"Here is the initial state of the page.","type":"text"}],"role":"user"},
+  // {"role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,xxxxxxxxx","detail":"auto"}},{"type":"text","text":"Here is the initial state of the page."}]}]
+
+  // Parse the last message from the inputMessages
+  const lastMessage = inputMessages[inputMessages.length - 1];
+  
+  // Extract the image and tree from the last message
+  const imageUrl = lastMessage.content.find(item => item.type === 'image_url').image_url.url;
+  const accessibilityTree = lastMessage.content.find(item => item.type === 'text').text;
+  
+  // Define the URL of the endpoint
+  const url = "https://1fb4-129-161-221-78.ngrok-free.app/api/ai/screenshots/upload";
+  
+  // Define the request ID
+  const requestId = "your_request_id";
+
+  function dataURLtoBlob(dataurl) {
+    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
+  }
+  
+  // Define the multipart/form-data payload
+  const payload = new FormData();
+  payload.append('request_id', requestId);
+  const imageBlob = dataURLtoBlob(imageUrl);
+  payload.append('screenshot', imageBlob, 'screenshot.png');
+  payload.append('accessibility_tree', accessibilityTree);
+  
+  // Make the POST request
+  const response = await fetch(url, {
+    method: 'POST',
+    body: payload,
   });
-  console.log(result);
+  
+  // Read the response text and store it in a variable
+  const responseText = await response.text();
+
+  // Print the response from the server
+  console.log("message from server", responseText);
+
+  // Use the stored response text
+  const result = JSON.parse(responseText);
+
+  console.log("json version message", result);
+
+  // const messages: ChatCompletionMessageParam[] = [
+  //   {
+  //     role: "system",
+  //     content: systemPrompt,
+  //   },
+  //   ...inputMessages,
+  // ];
+
+  // const result2 = await openai.chat.completions.create({
+  //   model: "gpt-4-vision-preview",
+  //   messages,
+  //   max_tokens: 4096,
+  // });
+  // console.log("correct output", result2);
+
   return result;
 }
 
