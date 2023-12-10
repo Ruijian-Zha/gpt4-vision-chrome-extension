@@ -23,40 +23,6 @@ const openai = new OpenAI({
 export async function createCompletionWorkaround(
   inputMessages: ChatCompletionMessageParam[]
 ) {
-  const systemPrompt = `You are given a text interface to a web browser. 
-    You can ONLY use JSON array of commands to respond and navigate the web page in the image:
-
-    - clickElementByTag: Clicks any button or link element marked with a yellow tag name.
-    - inputElementByTag: Inputs text into any input element marked with an orange tag name.
-    - scrollDown: Scrolls down the page.
-    - openUrlInCurrentTab: Opens a URL in the current tab.
-    - logAnser: Logs the answer to the console.
-    - taskDone: Ends the task.
-
-    Response can ONLY be a well-formed JSON array of commands.
-
-    Example response for the task "Send feedback saying that website is broken":
-
-    [
-        {
-            "clickElementByTag": "4269",
-            "reason": "clicked feedback button"
-        },
-        {
-            "inputElementByTag": "5140",
-            "value": "I would like to notify you that your website seems to be broken.",
-            "reason": "input feedback text",
-        },
-        {
-            "clickElementByTag": "8813",
-            "reason": "clicked submit button"
-        },
-        {
-            "logAnswer": "feedback sent",
-            "reason": "log completion of the task"
-        }
-    ]
-    `;
 
   console.log(inputMessages);
 
@@ -68,16 +34,27 @@ export async function createCompletionWorkaround(
   const lastMessage = inputMessages[inputMessages.length - 1];
   
   // Extract the image and tree from the last message
+   // @ts-ignore
   const imageUrl = lastMessage.content.find(item => item.type === 'image_url').image_url.url;
+   // @ts-ignore
   const accessibilityTree = lastMessage.content.find(item => item.type === 'text').text;
   
   // Define the URL of the endpoint
   const url = "https://1fb4-129-161-221-78.ngrok-free.app/api/ai/screenshots/upload";
-  
-  // Define the request ID
-  const requestId = "your_request_id";
 
-  function dataURLtoBlob(dataurl) {
+    // Generates a unique request ID
+  function generateRequestId(username: string): string {
+    const date = new Date();
+    const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    const timestamp = date.getTime();
+    const randomDigits = Math.floor(Math.random() * 1000); // Random number for uniqueness
+    return `${username}-${dateString}-${timestamp}-${randomDigits}`;
+  }
+
+  // Define the request ID
+  const requestId = generateRequestId("zhar2");
+
+  function dataURLtoBlob(dataurl: any) {
     var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
     while(n--){

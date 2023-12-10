@@ -57,6 +57,8 @@ export async function runController(input: runControllerProps) {
 
   const maxMessages = 20;
   while (messages.length < maxMessages) {
+
+    
     const response = await createCompletionWorkaround(messages);
     console.log(response);
     if (response.choices[0].message.content === "done") {
