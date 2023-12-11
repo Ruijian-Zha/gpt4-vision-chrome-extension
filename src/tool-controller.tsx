@@ -49,7 +49,7 @@ export async function runController(input: runControllerProps) {
       },
       {
         type: "text",
-        text: "Here is the initial state of the page.",
+        text: "",
       },
     ],
   });
@@ -58,7 +58,7 @@ export async function runController(input: runControllerProps) {
   const maxMessages = 20;
   while (messages.length < maxMessages) {
 
-    
+
     const response = await createCompletionWorkaround(messages);
     console.log(response);
     if (response.choices[0].message.content === "done") {
@@ -158,7 +158,7 @@ async function runTools(
       },
       {
         type: "text",
-        text: "Here is the updated state of the page.",
+        text: "",
       },
     ],
   };

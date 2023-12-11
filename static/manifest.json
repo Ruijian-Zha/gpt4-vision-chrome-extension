@@ -15,8 +15,7 @@
       "scripting", 
       "tabs",
       "storage",
-      "sidePanel",
-      "https://www.google.com/"
+      "sidePanel"
    ],
    "host_permissions": [
       "<all_urls>"
