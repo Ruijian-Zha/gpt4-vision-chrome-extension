@@ -33,6 +33,28 @@ export const App: React.FC = () => {
       setInput(inputValue); 
     }
   };
+
+  const handleReset = () => {
+    // Clear the input
+    setInput("");
+  
+    // Clear the textarea
+    if (textareaRef.current) {
+      textareaRef.current.value = "";
+    }
+  
+    // Clear the Chrome storage
+    chrome.storage.local.clear(function() {
+      var error = chrome.runtime.lastError;
+      if (error) {
+        console.error(error);
+      }
+    });
+  
+    // Reset other state variables if necessary
+    setHasPreviousState(false);
+    setLoading(false);
+  };
   
 
   return (
@@ -61,7 +83,7 @@ export const App: React.FC = () => {
                 placeholder="Enter task description"
               />
             </Box>
-            <Box>
+            <Box display="flex" alignItems="center" justifyContent="center">
               <Button
                 variant="contained"
                 type="submit"
@@ -69,6 +91,15 @@ export const App: React.FC = () => {
               >
                 Submit
               </Button>
+              <Box mx={2}> {/* This will add space between the buttons */}
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleReset}
+                >
+                  Reset
+                </Button>
+              </Box>
             </Box>
           </form>
         </TabPanel>
