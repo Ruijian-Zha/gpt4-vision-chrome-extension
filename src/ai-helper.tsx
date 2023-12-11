@@ -40,7 +40,7 @@ export async function createCompletionWorkaround(
   const accessibilityTree = lastMessage.content.find(item => item.type === 'text').text;
   
   // Define the URL of the endpoint
-  const url = "https://1fb4-129-161-221-78.ngrok-free.app/api/ai/screenshots/upload";
+  const url = "https://anteater-rare-ladybird.ngrok-free.app/api/ai/screenshots/upload";
 
     // Generates a unique request ID
   function generateRequestId(username: string): string {
