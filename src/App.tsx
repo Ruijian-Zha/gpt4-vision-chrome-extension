@@ -13,12 +13,15 @@ import { useAI } from "./useAI";
 import { ChatCompletionMessageParam } from "openai/resources";
 import { ToolResult } from "./tool-controller";
 import { ChatBubble } from "./ChatBubble";
+import { addUniqueTags } from './extension-helper';
+
 
 export const App: React.FC = () => {
   const [input, setInput] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [hasPreviousState, setHasPreviousState] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [tabValue, setTabValue] = useState<string>("1");
 
   useEffect(() => {
     getChromeStorage("chatData").then((chatData) => {
@@ -34,15 +37,25 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleAddUniqueTags = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const response = await addUniqueTags();
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleReset = () => {
     // Clear the input
     setInput("");
-  
+    
     // Clear the textarea
     if (textareaRef.current) {
       textareaRef.current.value = "";
     }
-  
+    
     // Clear the Chrome storage
     chrome.storage.local.clear(function() {
       var error = chrome.runtime.lastError;
@@ -50,21 +63,31 @@ export const App: React.FC = () => {
         console.error(error);
       }
     });
-  
+    
     // Reset other state variables if necessary
     setHasPreviousState(false);
     setLoading(false);
+  
+    // Refresh the current active tab in the browser
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (tabs[0]) {
+        //@ts-ignore
+        chrome.tabs.reload(tabs[0].id);
+      }
+    });
   };
   
 
   return (
-    
     <Box sx={{ width: '100%', typography: 'body1', margin: ['10px', '10px', '10px', '10px'] }}>
-      <TabContext value={"1"}>
+      <TabContext value={tabValue}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <TabList onChange={() => {}} aria-label="lab API tabs example">
-            <Tab label="Item One" value="1" />
-            <Tab label="Item Two" value="2" />
+          <TabList 
+            onChange={(event, newValue) => setTabValue(newValue)} 
+            aria-label="lab API tabs example"
+          >
+            <Tab label="Web Agent" value="1" />
+            <Tab label="Segmentation" value="2" />
             <Tab label="Item Three" value="3" />
           </TabList>
         </Box>
@@ -105,7 +128,26 @@ export const App: React.FC = () => {
         </TabPanel>
         
         <TabPanel value="2">
-        Item Two
+          <form className="flex flex-col" onSubmit={handleAddUniqueTags}>
+            <Box display="flex" alignItems="center" justifyContent="center">
+              <Button
+                variant="contained"
+                type="submit"
+                disabled={loading}
+              >
+                Add Unique Tags
+              </Button>
+              <Box mx={2}> {/* This will add space between the buttons */}
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleReset}
+                >
+                  Reset
+                </Button>
+              </Box>
+            </Box>
+          </form>
         </TabPanel>
         <TabPanel value="3">Item Three</TabPanel>
       </TabContext>
